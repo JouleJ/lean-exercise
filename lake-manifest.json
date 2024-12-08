@@ -1,0 +1,7 @@
+{
+ "version": 0,
+ "packagesDir": ".lake/packages",
+ "packages": [],
+ "name": "LeanExercise",
+ "lakeDir": ".lake"
+}

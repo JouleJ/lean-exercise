@@ -1,3 +1,5 @@
+namespace Set
+
 -- Set is always collection of elements of same type
 structure Set (α: Type) where
     p: α → Prop -- predicate selecting content of the set
