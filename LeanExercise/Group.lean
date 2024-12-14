@@ -84,6 +84,14 @@ theorem sufficientConditionForBeingInverse {α: Type} (G: Group α):
 
 #check sufficientConditionForBeingInverse
 
+theorem inverseOfNeutralIsNeutral {α: Type} (G: Group α): G.inverse G.neutral = G.neutral
+  := by apply Eq.symm
+        apply sufficientConditionForBeingInverse G G.neutral G.neutral
+        apply And.intro
+        exact G.neutralLiesInG
+        exact G.neutralLiesInG
+        exact (G.neutralIsCorrect G.neutral G.neutralLiesInG).left
+
 theorem inverseOfProduct {α: Type} (G: Group α):
  ∀g: α, ∀h: α,
   (inside g G.G) ∧ (inside h G.G) → G.inverse (G.combine g h) = G.combine (G.inverse h) (G.inverse g)
@@ -136,3 +144,55 @@ theorem inverseOfProduct {α: Type} (G: Group α):
           _ = G.neutral := (G.inverseIsCorrect g gInG).left
 
 #check inverseOfProduct
+
+structure Subgroup (α: Type) (G: Group α) where
+    H: Set α
+
+    hIsPartOfG: isSubSet H G.G
+    neutralLiesInH: inside G.neutral H
+    inverseLiesInH: ∀h: α, inside h H → inside (G.inverse h) H
+    combineLiesInH: ∀h: α, ∀h': α, inside h H ∧ inside h' H → inside (G.combine h h') H
+
+theorem subgroupIsGroup {α: Type} (G: Group α) (H: Subgroup α G): Group α
+    := by apply Group.mk H.H G.combine G.inverse G.neutral
+          case neutralLiesInG => exact H.neutralLiesInH
+          case combineLiesInG => exact H.combineLiesInH
+          case inverseLiesInG => exact H.inverseLiesInH
+          case combineIsAssociative => intro a b c
+                                       intro (And.intro aInH (And.intro bInH cInH))
+                                       apply G.combineIsAssociative
+                                       apply And.intro
+                                       apply setContainsElementsOfSubset G.G H.H H.hIsPartOfG a
+                                       exact aInH
+                                       apply And.intro
+                                       apply setContainsElementsOfSubset G.G H.H H.hIsPartOfG b
+                                       exact bInH
+                                       apply setContainsElementsOfSubset G.G H.H H.hIsPartOfG c
+                                       exact cInH
+          case neutralIsCorrect => intro a aInH
+                                   apply G.neutralIsCorrect
+                                   apply setContainsElementsOfSubset G.G H.H H.hIsPartOfG a
+                                   exact aInH
+          case inverseIsCorrect => intro a aInH
+                                   apply G.inverseIsCorrect
+                                   apply setContainsElementsOfSubset G.G H.H H.hIsPartOfG a
+                                   exact aInH
+
+#check subgroupIsGroup
+
+def mkTrivialSubGroup {α: Type} (G: Group α): Subgroup α G
+    := by apply Subgroup.mk (mkSingleton G.neutral)
+          case hIsPartOfG => exact setIncludesSingletonsOfItsElements G.G G.neutral G.neutralLiesInG
+          case neutralLiesInH => rfl
+          case inverseLiesInH => intro h hInSingleton
+                                 have p: (h = G.neutral) := by assumption
+                                 have p': (G.inverse h = G.neutral) := by rewrite[p]; exact inverseOfNeutralIsNeutral G
+                                 rewrite [p']
+                                 rfl
+          case combineLiesInH => intro a b (And.intro aInSingleton bInSingleton)
+                                 have aEqualsNeutral: (a = G.neutral) := by assumption
+                                 have bEqualsNeutral: (b = G.neutral) := by assumption
+                                 rewrite [aEqualsNeutral, bEqualsNeutral]
+                                 rewrite [(G.neutralIsCorrect G.neutral G.neutralLiesInG).left]
+                                 rfl
+#check mkTrivialSubGroup
