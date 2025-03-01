@@ -1,4 +1,3 @@
 -- This module serves as the root of the `LeanExercise` library.
 -- Import modules here that should be built as part of the library.
-import «LeanExercise».Set
-import «LeanExercise».Group
+import LeanExercise.Axiomatic.Set
